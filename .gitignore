@@ -1,0 +1,17 @@
+*.iml
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/*/build/
+/captures
+.idea/*
+/dataprovider-digits/fabric.properties
+/dataprovider-digits/src/main/assets/crashlytics-build.properties
+/dataprovider-digits/src/main/res/values/com_crashlytics_export_strings.xml
+/google_play_key.json
+*.hprof
+*.externalNativeBuild
+*.cxx
