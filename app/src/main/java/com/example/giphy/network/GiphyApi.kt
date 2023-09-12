@@ -31,7 +31,7 @@ class GiphyApi {
                         )
                         .build()
                 ).also {
-                    Timber.d("call: $it")
+                    Timber.tag("ApiCall").d("call: $it")
                 }
             }
         }

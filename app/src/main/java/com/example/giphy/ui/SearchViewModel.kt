@@ -9,13 +9,14 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import com.example.giphy.model.GiphyImage
+import com.example.giphy.repository.ApiConstants.GIPHY_API_LIMIT
+import com.example.giphy.repository.ApiConstants.PAGER_PAGE_SIZE
 import com.example.giphy.repository.SearchRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
@@ -25,21 +26,18 @@ class SearchViewModel @Inject constructor(
     private val searchRepository: SearchRepository
 ) : ViewModel() {
 
-    companion object {
-        const val PAGER_PAGE_SIZE = 25
-    }
-
     @OptIn(FlowPreview::class)
     fun getDataFlow(keyWord: String): Flow<PagingData<GiphyImage>> = Pager(
-        config = PagingConfig(pageSize = PAGER_PAGE_SIZE),
-        initialKey = 0,
-        pagingSourceFactory = {
-            SearchSourceFactoryImpl(
-                repository = searchRepository,
-                keyWord = keyWord
-            )
-
-        }).flow.debounce(300).distinctUntilChanged().flowOn(Dispatchers.IO).cachedIn(viewModelScope)
+        config = PagingConfig(
+            pageSize = PAGER_PAGE_SIZE,
+            initialLoadSize = 10
+        )
+    ) {
+        SearchSourceFactoryImpl(
+            repository = searchRepository,
+            keyWord = keyWord
+        )
+    }.flow.debounce(300).flowOn(Dispatchers.IO).cachedIn(viewModelScope)
 
 }
 
@@ -50,15 +48,17 @@ class SearchSourceFactoryImpl(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GiphyImage> {
         return try {
+            val currentPage = params.key ?: 0
             val results = repository.getSearchResults(
                 searchKeyWord = keyWord,
-                offset = params.key ?: 1,
-                count = params.loadSize
+                offset = currentPage * PAGER_PAGE_SIZE,
+                amountOfGifs = GIPHY_API_LIMIT
             )
+
             LoadResult.Page(
                 data = results.data,
                 prevKey = null,
-                nextKey = if (results.data.isNotEmpty()) results.currentOffset + 1 else null
+                nextKey = if (results.data.isNotEmpty()) currentPage + 1 else null
             )
         } catch (throwable: Throwable) {
             LoadResult.Error(throwable)
@@ -68,7 +68,7 @@ class SearchSourceFactoryImpl(
     override fun getRefreshKey(state: PagingState<Int, GiphyImage>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
-            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+            anchorPage?.prevKey?.minus(1) ?: anchorPage?.nextKey?.plus(1)
         }
     }
 

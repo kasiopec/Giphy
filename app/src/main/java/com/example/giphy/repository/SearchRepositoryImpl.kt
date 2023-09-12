@@ -4,17 +4,20 @@ import com.example.giphy.model.GiphyImage
 import com.example.giphy.model.PagingResult
 import com.example.giphy.network.GiphyService
 import javax.inject.Inject
+import kotlin.math.ceil
 
-class SearchRepositoryImpl @Inject constructor(private val searchApi: GiphyService) : SearchRepository {
+class SearchRepositoryImpl @Inject constructor(
+    private val searchApi: GiphyService
+) : SearchRepository {
 
     override suspend fun getSearchResults(
         searchKeyWord: String,
         offset: Int,
-        count: Int
+        amountOfGifs: Int
     ): PagingResult<List<GiphyImage>> {
         val response = searchApi.searchResult(
             offset = offset,
-            limit = count,
+            limit = amountOfGifs,
             searchKeyWord = searchKeyWord,
         )
 
@@ -27,13 +30,10 @@ class SearchRepositoryImpl @Inject constructor(private val searchApi: GiphyServi
                 url = it.images?.fixed_height?.url
             )
         }.let {
-            val totalPage = pagination.total_count / pagination.count
             PagingResult(
                 data = it,
-                currentOffset = pagination.offset,
-                nextOffset = (pagination.offset + 1).takeIf { next ->
-                    next < totalPage
-                }
+                totalGifs = pagination.total_count,
+                currentPage = ceil(offset.toDouble() / 25.0).toInt()
             )
         }
     }
