@@ -24,7 +24,8 @@ import com.example.giphy.util.Dimensions
 @Composable
 fun Card(
     title: String,
-    imageUrl: String?
+    imageUrl: String?,
+    imageIndex: Int
 ) {
     val borderShape = RoundedCornerShape(Dimensions.cornerRadiusVeryLarge)
     Box(
@@ -70,7 +71,7 @@ fun Card(
                         end.linkTo(parent.end, 16.dp)
                         bottom.linkTo(parent.bottom, 16.dp)
                     },
-                text = title,
+                text = "$imageIndex $title",
                 maxLines = 1,
                 color = Color.Black
             )
@@ -94,7 +95,8 @@ fun CardPreview() {
         VerticalSpacer(height = 24.dp)
         Card(
             title = "Example",
-            imageUrl = "https://media.istockphoto.com/id/1322277517/photo/wild-grass-in-the-mountains-at-sunset.jpg?s=612x612&w=0&k=20&c=6mItwwFFGqKNKEAzv0mv6TaxhLN3zSE43bWmFN--J5w="
+            imageUrl = "https://media.istockphoto.com/id/1322277517/photo/wild-grass-in-the-mountains-at-sunset.jpg?s=612x612&w=0&k=20&c=6mItwwFFGqKNKEAzv0mv6TaxhLN3zSE43bWmFN--J5w=",
+            imageIndex = 1
         )
         VerticalSpacer(height = 24.dp)
 

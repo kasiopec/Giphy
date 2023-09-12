@@ -14,7 +14,6 @@ import androidx.paging.compose.LazyPagingItems
 import com.example.giphy.model.GiphyImage
 import com.example.giphy.util.Loading
 import com.example.giphy.util.Error
-import timber.log.Timber
 
 @Composable
 fun ImageList(
@@ -35,21 +34,13 @@ fun ImageList(
             item {
                 VerticalSpacer(height = 10.dp)
             }
-//            when (val state = images.loadState.prepend) {
-//                is LoadState.NotLoading -> {
-//                }
-//                is LoadState.Loading -> {
-//                    Loading()
-//                }
-//                is LoadState.Error -> {
-//                    Error(message = state.error.message ?: "")
-//                }
-//            }
+
             when (val state = images.loadState.refresh) {
                 is LoadState.NotLoading -> Unit
                 is LoadState.Loading -> {
                     Loading()
                 }
+
                 is LoadState.Error -> {
                     Error(message = state.error.message ?: "")
                 }
@@ -58,11 +49,11 @@ fun ImageList(
             items(
                 count = images.itemCount
             ) {
-                images.itemSnapshotList.items.forEach { image ->
-                    Timber.d("images: $image")
+                images[it]?.let { giphyImage ->
                     Card(
-                        title = image.title,
-                        imageUrl = image.url
+                        title = giphyImage.title,
+                        imageUrl = giphyImage.url,
+                        imageIndex = it
                     )
                     VerticalSpacer(height = 10.dp)
                 }
@@ -71,9 +62,11 @@ fun ImageList(
             when (val state = images.loadState.append) {
                 is LoadState.NotLoading -> {
                 }
+
                 is LoadState.Loading -> {
                     Loading()
                 }
+
                 is LoadState.Error -> {
                     Error(message = state.error.message ?: "")
                 }
